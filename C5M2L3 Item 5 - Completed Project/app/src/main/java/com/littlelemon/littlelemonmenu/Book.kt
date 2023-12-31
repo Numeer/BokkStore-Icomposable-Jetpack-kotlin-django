@@ -1,14 +1,15 @@
 package com.littlelemon.littlelemonmenu
 
+import androidx.room.ColumnInfo
 import androidx.room.Embedded
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.google.gson.annotations.SerializedName
 @Entity(tableName = "books")
 data class Book(
-    @PrimaryKey val id: Int,
     @SerializedName("pk")
-    val name: String,
+    @PrimaryKey val name: String,
+
     @SerializedName("fields")
     @Embedded val fields: BookFields
 )

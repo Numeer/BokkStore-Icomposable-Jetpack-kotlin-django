@@ -3,14 +3,12 @@ package com.littlelemon.littlelemonmenu
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material.Surface
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.room.Room
 import loginPage
 
 class MainActivity : ComponentActivity() {
@@ -21,7 +19,11 @@ class MainActivity : ComponentActivity() {
             val materialBlue700 = Color(0xFF1976D2)
 
             if (isLoggedIn) {
-                RecyclerPage()
+                val appDatabase = Room.databaseBuilder(
+                    applicationContext,
+                    AppDatabase::class.java, "books"
+                ).build()
+                RecyclerPage(appDatabase)
             }
             else
             {

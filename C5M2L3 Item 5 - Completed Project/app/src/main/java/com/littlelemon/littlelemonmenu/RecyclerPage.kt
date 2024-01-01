@@ -23,6 +23,7 @@ import androidx.room.Room
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -34,6 +35,11 @@ import retrofit2.converter.gson.GsonConverterFactory
 fun RecyclerPage(appDatabase: AppDatabase) {
     val dataListState = remember { mutableStateOf(emptyList<Book>()) }
     val isLoadingState = remember { mutableStateOf(false) }
+
+    LaunchedEffect(Unit) {
+        fetchDataFromDatabase(appDatabase, dataListState, isLoadingState)
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -111,16 +117,31 @@ fun fetchData(
             } else {
                 Log.d("MainActivityF", "Request failed: ${response.code()}")
             }
-            isLoadingState.value = false // Set isLoading to false after fetching the data
+            isLoadingState.value = false
         }
 
         override fun onFailure(call: Call<List<Book>>, t: Throwable) {
             Log.e("MainActivityF", "Error getting books", t)
-            isLoadingState.value = false // Set isLoading to false in case of failure
+            isLoadingState.value = false
         }
     })
 }
 
+suspend fun fetchDataFromDatabase(
+    appDatabase: AppDatabase,
+    dataListState: MutableState<List<Book>>,
+    isLoadingState: MutableState<Boolean>
+) {
+    withContext(Dispatchers.IO) {
+        val booksFromDB = appDatabase.bookDao().getAllBooks()
+        if (!booksFromDB.isNullOrEmpty()) {
+            dataListState.value = booksFromDB
+        } else {
+            Log.d("MainActivityF", "No books found in the database")
+        }
+        isLoadingState.value = false
+    }
+}
 
 
 

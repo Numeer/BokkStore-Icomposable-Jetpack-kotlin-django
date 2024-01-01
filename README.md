@@ -1,1 +1,0 @@
-# BokkStore-Icomposable-Jetpack-kotlin-django

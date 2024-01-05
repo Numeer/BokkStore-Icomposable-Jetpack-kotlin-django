@@ -5,13 +5,12 @@ import androidx.room.Embedded
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.google.gson.annotations.SerializedName
-@Entity(tableName = "books")
 data class Book(
     @SerializedName("pk")
-    @PrimaryKey val name: String,
+    val name: String,
 
     @SerializedName("fields")
-    @Embedded val fields: BookFields
+    val fields: BookFields
 )
 
 data class BookFields(

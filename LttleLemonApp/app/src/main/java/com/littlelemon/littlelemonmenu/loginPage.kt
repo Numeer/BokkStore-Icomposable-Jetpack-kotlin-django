@@ -1,3 +1,4 @@
+import android.os.AsyncTask
 import android.util.Log
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.Button
@@ -47,39 +48,14 @@ fun loginPage(onLoginSuccess: () -> Unit) {
         )
         Spacer(modifier = Modifier.height(10.dp))
         Button(onClick = {
-            val api: LoginService = Retrofit.Builder()
-                .baseUrl("http://192.168.1.7:8000") // Replace with your base URL
-                .addConverterFactory(ScalarsConverterFactory.create())
-                .build()
-                .create(LoginService::class.java)
-
-            val call = api.login(username, password)
-            call.enqueue(object : Callback<String> {
-                override fun onResponse(call: Call<String>, response: Response<String>) {
-                    Log.d("Response", response.body().toString())
-                    if (response.isSuccessful) {
-                        val responseBody = response.body()
-                        if (responseBody != null && responseBody == "Login successful") {
-                            loginResult = "Login Successful"
-                            Log.d("Success", "Logged In")
-                            errorMessage = ""
-                            onLoginSuccess()
-                        } else {
-                            errorMessage = "Login Failed"
-                            Log.e("Response", "Invalid response body")
-                        }
-                    } else {
-                        errorMessage = "Login Failed"
-                        Log.e("Response", "Failed to login: ${response.code()}")
-                    }
+            AsyncLoginTask(username, password) { loginResult ->
+                if (loginResult == "Login Successful") {
+                    errorMessage = ""
+                    onLoginSuccess()
+                } else {
+                    errorMessage = "Login Failed"
                 }
-
-                override fun onFailure(call: Call<String>, t: Throwable) {
-                    errorMessage = "Login Failed: ${t.message}"
-                    Log.e("Response", "Failed to login: ${t.message}")
-                }
-            })
-
+            }.execute()
         }) {
             Text(text = "Login")
         }
@@ -90,5 +66,39 @@ fun loginPage(onLoginSuccess: () -> Unit) {
         if (loginResult.isNotEmpty()){
             Text(text = loginResult )
         }
+    }
+}
+class AsyncLoginTask(
+    private val username: String,
+    private val password: String,
+    private val onLoginSuccess: (String) -> Unit
+) : AsyncTask<Void, Void, String>() {
+
+    override fun doInBackground(vararg params: Void?): String {
+        val api: LoginService = Retrofit.Builder()
+            .baseUrl("http://192.168.1.7:8000")
+            .addConverterFactory(ScalarsConverterFactory.create())
+            .build()
+            .create(LoginService::class.java)
+
+        val call = api.login(username, password)
+        return try {
+            val response = call.execute()
+            if (response.isSuccessful) {
+                val responseBody = response.body()
+                responseBody?.let {
+                    if (it == "Login successful") {
+                        return "Login Successful"
+                    }
+                }
+            }
+            "Login Failed"
+        } catch (e: Exception) {
+            "Login Failed: ${e.message}"
+        }
+    }
+
+    override fun onPostExecute(result: String) {
+        onLoginSuccess(result)
     }
 }

@@ -19,11 +19,8 @@ class MainActivity : ComponentActivity() {
             val materialBlue700 = Color(0xFF1976D2)
 
             if (isLoggedIn) {
-                val appDatabase = Room.databaseBuilder(
-                    applicationContext,
-                    AppDatabase::class.java, "books"
-                ).build()
-                RecyclerPage(appDatabase)
+                val myDbHelper = MyDbHelper(applicationContext)
+                RecyclerPage(myDbHelper)
             }
             else
             {
